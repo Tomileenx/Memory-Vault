@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: notification-service
+
+  brevo:
+    sender-email: ${BREVO_SENDER_EMAIL}
+    api-key: ${BREVO_API_KEY}
+    sender-name: ${BREVO_SENDER_NAME}
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    consumer:
+      group-id: email-service-group
+      auto-offset-reset: earliest
+
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "com.example.events"
+
+            use:
+              type:
+                headers: true
+
+server: 8085
