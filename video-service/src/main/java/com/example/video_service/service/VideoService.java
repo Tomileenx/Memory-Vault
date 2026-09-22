@@ -1,6 +1,7 @@
 package com.example.video_service.service;
 
 import com.example.video_service.dto.UploadUrlResponse;
+import com.example.video_service.dto.VideoResponse;
 import com.example.video_service.event.VideoUploadedEvent;
 import com.example.video_service.dto.VideoUploadRequest;
 import com.example.video_service.entity.Video;
@@ -18,6 +19,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
@@ -307,5 +312,107 @@ public class VideoService {
 
             throw e;
         }
+    }
+
+    public void updateHlsUrl(String videoId, String hlsUrl) {
+        log.info("videoId = {}", videoId);
+        log.info("hlsUrl = {}", hlsUrl);
+
+        log.info("Updating hls Url for video {}", videoId);
+        Video video = videoRepo.findById(videoId)
+                .orElseThrow(() -> new NotFound("Video not found"));
+
+        video.setHlsUrl(hlsUrl);
+        video.setVideoStatus(VideoStatus.READY);
+        videoRepo.save(video);
+
+        log.info("Saved hlsUrl = {}",  video.getHlsUrl());
+
+        log.info("Video is now ready for streaming {}", videoId);
+    }
+
+    public void updateVideoStatus(String videoId, VideoStatus videoStatus) {
+        Video video = videoRepo.findById(videoId)
+                .orElseThrow(() -> new NotFound("Video not found"));
+
+        video.setVideoStatus(videoStatus);
+        videoRepo.save(video);
+    }
+
+    public void updateVideoDurationSeconds(String videoId, Long durationSeconds) {
+        Video video = videoRepo.findById(videoId)
+                .orElseThrow(() -> new NotFound("Video not found"));
+
+        video.setDurationSeconds(durationSeconds);
+        videoRepo.save(video);
+    }
+
+    public VideoResponse getVideo(UUID userId, String videoId) {
+        Video video = videoRepo.findByUserIdAndId(userId, videoId)
+                .orElseThrow(() -> new NotFound("Video not found"));
+
+        return new VideoResponse(
+                videoId,
+                video.getTitle(),
+                video.getDescription(),
+                video.getDurationSeconds(),
+                video.getContentType(),
+                video.getFileSize(),
+                video.getVideoStatus(),
+                video.getVideoKey(),
+                video.getCreatedAt()
+        );
+    }
+
+    public Page<VideoResponse> getAllVideos(UUID userId, Pageable pageable) {
+        Pageable pageRequest = PageRequest.of(
+                pageable.getPageNumber(),
+                Math.min(pageable.getPageSize(), 10),
+                Sort.by("createdAt").descending()
+        );
+
+        Page<Video> page = videoRepo.findAllByUserId(userId, pageRequest);
+
+        return page.map(
+                video -> new VideoResponse(
+                        video.getId(),
+                        video.getTitle(),
+                        video.getDescription(),
+                        video.getDurationSeconds(),
+                        video.getContentType(),
+                        video.getFileSize(),
+                        video.getVideoStatus(),
+                        video.getVideoKey(),
+                        video.getCreatedAt()
+                )
+        );
+    }
+
+    public Page<VideoResponse> searchVideos(
+            UUID userId,
+            String title,
+            Pageable pageable
+    ) {
+        Pageable pageRequest = PageRequest.of(
+                pageable.getPageNumber(),
+                Math.min(pageable.getPageSize(), 10),
+                pageable.getSort()
+        );
+
+        Page<Video> page = videoRepo.searchVideos(userId, title, pageRequest);
+
+        return page.map(
+                video -> new VideoResponse(
+                        video.getId(),
+                        video.getTitle(),
+                        video.getDescription(),
+                        video.getDurationSeconds(),
+                        video.getContentType(),
+                        video.getFileSize(),
+                        video.getVideoStatus(),
+                        video.getVideoKey(),
+                        video.getCreatedAt()
+                )
+        );
     }
 }

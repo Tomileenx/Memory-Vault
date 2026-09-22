@@ -32,7 +32,7 @@ public class Video {
     private String description;
 
     @Column(nullable = true)
-    private Integer durationMinutes;
+    private Long durationSeconds;
 
     private String contentType;
 
@@ -40,8 +40,6 @@ public class Video {
 
     // S3 key for the video file
     private String videoKey;
-
-    private String uploadUrl;
 
     // HLS master playlist URL for streaming
     private String hlsUrl;
