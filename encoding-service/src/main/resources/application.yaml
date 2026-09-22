@@ -39,15 +39,15 @@ aws:
 
 # FFmpeg configuration
 ffmpeg:
-  path: ${FFMPEG_PATH}
+  path: ${FFMPEG_PATH:ffmpeg}
 
 # FFprobe configuration
 ffprobe:
-  path: ${FFPROBE_PATH}
+  path: ${FFPROBE_PATH:ffprobe}
 
 ## Temp directory for encoding
 encoding:
-  temp-dir: ${ENCODING_TEMP_DIR}
+  temp-dir: ${ENCODING_TEMP_DIR:/tmp/memoryvault}
 
 management:
   endpoints:
