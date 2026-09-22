@@ -39,15 +39,15 @@ aws:
 
 # FFmpeg configuration
 ffmpeg:
-  path: C:/Users/USER/Documents/ffmpeg-8.1.2-essentials_build/bin/ffmpeg.exe
+  path: ${FFMPEG_PATH}
 
 # FFprobe configuration
 ffprobe:
-  path: C:/Users/USER/Documents/ffmpeg-8.1.2-essentials_build/bin/ffprobe.exe
+  path: ${FFPROBE_PATH}
 
 ## Temp directory for encoding
 encoding:
-  temp-dir: C:/Users/USER/Documents/encoding
+  temp-dir: ${ENCODING_TEMP_DIR}
 
 management:
   endpoints:
